@@ -89,7 +89,7 @@ def hello_world():
 
 @app.route('/key_info')
 def key_info():
-    return jsonify(key_manager.usage)
+    return jsonify({hash_key(key): value for key, value in key_manager.usage.items()})
 
 @app.route('/generate', methods=['POST'])
 def generate():
