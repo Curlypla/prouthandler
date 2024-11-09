@@ -1,5 +1,6 @@
 import time
 import os
+import json
 from flask import Flask, request, jsonify
 import google.generativeai as genai
 from collections import deque
@@ -9,6 +10,7 @@ app = Flask(__name__)
 
 # Configuration
 API_KEYS = os.getenv("API_KEYS").split(",")  # Comma-separated list of API keys
+JSON_FILE = "api_key_state.json"
 
 RESET_INTERVAL = 60  # seconds
 MAX_RETRIES = 4  # 2 for Pro, 2 for Flash
@@ -24,36 +26,49 @@ SAFETY_SETTINGS = [
 class APIKeyManager:
     def __init__(self, keys):
         self.keys = deque(keys)
-        self.usage = {key: {
-            "pro_count": 0, 
-            "pro_daily": 0,
-            "flash_count": 0, 
-            "flash_daily": 0,
-            "last_reset": time.time()
-        } for key in keys}
+        self.usage = self.load_state()
+        if not self.usage:
+            self.usage = {key: {
+                "pro_count": 0, 
+                "pro_daily": 0,
+                "flash_count": 0, 
+                "flash_daily": 0,
+                "last_reset": time.time()
+            } for key in keys}
         self.lock = Lock()
+
+    def load_state(self):
+        if os.path.exists(JSON_FILE):
+            with open(JSON_FILE, 'r') as f:
+                return json.load(f)
+        return {}
+
+    def save_state(self):
+        with open(JSON_FILE, 'w') as f:
+            json.dump(self.usage, f)
 
     def get_available_key(self, model):
         while True:
             with self.lock:
                 current_time = time.time()
                 for _ in range(len(self.keys)):
+                    self.keys.rotate(-1)
                     key = self.keys[0]
                     if current_time - self.usage[key]["last_reset"] >= RESET_INTERVAL:
                         self.usage[key]["pro_count"] = 0
                         self.usage[key]["flash_count"] = 0
                         self.usage[key]["last_reset"] = current_time
                     
-                    if model == "pro" and self.usage[key]["pro_count"] < 2 and self.usage[key]["pro_daily"] < 50:
+                    if model == "pro" and self.usage[key]["pro_count"] < 2 and self.usage[key]["pro_daily"] < 10000:
                         self.usage[key]["pro_count"] += 1
                         self.usage[key]["pro_daily"] += 1
+                        #self.save_state()
                         return key
                     elif model == "flash" and self.usage[key]["flash_count"] < 15 and self.usage[key]["flash_daily"] < 1500:
                         self.usage[key]["flash_count"] += 1
                         self.usage[key]["flash_daily"] += 1
+                        #self.save_state()
                         return key
-                    
-                    self.keys.rotate(-1)
             time.sleep(1)
 
 key_manager = APIKeyManager(API_KEYS)
@@ -101,4 +116,4 @@ def generate():
     return jsonify({"response": response})
 
 if __name__ == '__main__':
-    app.run(threaded=True)
+    app.run(threaded=True, host="0.0.0.0")
