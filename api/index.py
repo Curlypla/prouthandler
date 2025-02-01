@@ -108,12 +108,17 @@ def key_info():
 
 @app.route('/generate', methods=['POST'])
 def generate():
-    prompt = request.json.get('prompt')
-    if not prompt:
-        return jsonify({"error": "No prompt provided"}), 400
-    
-    response = get_gemini_response(prompt)
-    return jsonify({"response": response})
+    try:
+        prompt = request.json.get('prompt')
+        if not prompt:
+            return jsonify({"error": "No prompt provided"}), 400
 
+        response = get_gemini_response(prompt)
+        return jsonify({"response": response})
+    
+    except Exception as e:
+        print("Request failed:", str(e))
+        return jsonify({"error": "Internal server error"}), 500
+        
 if __name__ == '__main__':
     app.run(threaded=True, host="0.0.0.0")
