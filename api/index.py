@@ -1,4 +1,4 @@
-import time
+import time,random
 import os
 import json
 from flask import Flask, request, jsonify
@@ -52,6 +52,7 @@ class APIKeyManager:
             with self.lock:
                 current_time = time.time()
                 for _ in range(len(self.keys)):
+                    time.sleep(random.randint(0, 20))
                     self.keys.rotate(-1)
                     key = self.keys[0]
                     if current_time - self.usage[key]["last_reset"] >= RESET_INTERVAL:
