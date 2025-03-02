@@ -52,7 +52,7 @@ class APIKeyManager:
             with self.lock:
                 current_time = time.time()
                 for _ in range(len(self.keys)):
-                    time.sleep(random.randint(0, 2))
+                    time.sleep(random.randint(0, 5))
                     self.keys.rotate(-1)
                     key = self.keys[0]
                     if current_time - self.usage[key]["last_reset"] >= RESET_INTERVAL:
