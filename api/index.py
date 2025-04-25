@@ -75,8 +75,8 @@ class APIKeyManager:
 key_manager = APIKeyManager(API_KEYS)
 
 def get_gemini_response(prompt):
-    models = ['gemini-2.0-pro-exp-02-05', 'gemini-exp-1206', 'gemini-1.5-pro-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
-    temperatures = [1.0, 1.0, 1.0, 1.0, 0.5]
+    models = ['gemini-2.0-pro-exp-02-05','gemini-2.0-pro-exp-02-05','gemini-2.0-pro-exp-02-05', 'gemini-exp-1206', 'gemini-1.5-pro-latest', 'gemini-2.0-flash', 'gemini-1.5-flash']
+    temperatures = [1.0, 1.0, 0.7, 1.0, 1.0, 1.0, 0.5]
 
     for attempt in range(MAX_RETRIES):
         try:
