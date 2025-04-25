@@ -13,7 +13,7 @@ API_KEYS = os.getenv("API_KEYS").split(",")  # Comma-separated list of API keys
 JSON_FILE = "api_key_state.json"
 
 RESET_INTERVAL = 60  # seconds
-MAX_RETRIES = 4  # 2 for Pro, 2 for Flash
+MAX_RETRIES = 7  # 2 for Pro, 2 for Flash
 
 # Safety settings
 SAFETY_SETTINGS = [
